@@ -1,0 +1,47 @@
+html,
+body {
+  position: relative;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+footer {
+  background-color: #444;   /* 背景色(黒) */
+	width:100%;               /* 横の幅を100% */
+	height: 60px;             /* 縦の幅を60px */
+	bottom: 0;              /* 絶対位置指定(左0px,下0px) */
+  color: white;
+  clear: both;
+}
+
+footer li {
+  display: inline-block;
+  list-style-type: none;
+  text-align: center;
+  height: 20px;
+  width: 80px;
+  padding: 20px;
+}
+
+#map_canvas {
+  height: 600px;
+  width: 720px;
+  margin-right: 20px;
+  }
+
+ #map_fixed {
+   position: fixed;
+   top: 10px;
+   right: 20px;
+   bottom: 10px;
+ }
+
+ #result_from_url {
+   float: left;
+   width: 40%;
+   margin: 20px;
+ }
+
+ #result_from_url li {
+ }

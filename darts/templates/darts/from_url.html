@@ -1,0 +1,14 @@
+{% extends "darts/base.html" %}
+
+{% block content %}
+<div id="result_from_url">
+<ol>
+  {% for address in addresses %}
+    <li>{{ address }}</li>
+  {% endfor %}
+</ol>
+</div>
+<div id="map_fixed">
+  <div id="map_canvas"></div>
+</div>
+{% endblock %}

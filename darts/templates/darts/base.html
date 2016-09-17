@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="{% static 'darts/css/style.css' %}" />
+    <title>{% block title %}DartMap{% endblock %}</title>
+  </head>
+  <body>
+    <div id="header">{% block header %}{% endblock %}</div>
+    {% block content %}{% endblock %}
+    <footer>
+      {% block footer %}
+        <li>About</li>
+        <li>Contact</li>
+      {% endblock %}
+    </footer>
+    <script type="text/javascript" src="{% static 'darts/js/init_map.js' %}"></script>
+    <script async defer src='{{ map_src }}'></script>
+    {% block mapscript %}{% endblock %}
+  </body>
+</html>
