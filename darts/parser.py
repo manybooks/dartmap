@@ -1,6 +1,9 @@
 #coding:utf-8
 from bs4 import BeautifulSoup
 from collections import OrderedDict, namedtuple
+from . import encoding
+import codecs
+import json
 import requests
 import os
 import sys
@@ -17,6 +20,10 @@ ADDRESS_PATTERN = "(?P<address>\S{2,3}[都道府県]+.*[市区町村].*[0-9０-�
 
 ADDRESS_WORD_CNT_MAX = 40
 
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'client_secrets.json'), 'r') as f:
+    secrets = json.load(f)
+    GOOGLE_MAPS_API_KEY = secrets['key']['g_map_api']
+
 class BaseParser(object):
     def make_darts(self):
         '''Make several marker of google maps from seed.
@@ -29,6 +36,8 @@ class HtmlParser(BaseParser):
         self._depth = depth
         self._urls = [url]
         self._darts = set()
+        for search_function in encoding.search_functions():
+            codecs.register(search_function)
 
     def _parse_url(self, url, bsFlag=False):
         res = requests.get(url)
