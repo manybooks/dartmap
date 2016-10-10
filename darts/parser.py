@@ -2,8 +2,8 @@
 from bs4 import BeautifulSoup
 from collections import OrderedDict, namedtuple
 from . import encoding
+from .models import Dart
 import codecs
-import json
 import requests
 import os
 import sys
@@ -15,14 +15,13 @@ KEYWORDS = {"address": "address",
             "street": "street"}
 
 #ADDRESS_PATTERN = "(?P<address>(.+[都道府県])?.*[市区町村].*[0-9０-９]+(?!.*[、。}]))" #都道府県を含まなくてもヒットするが、許容範囲が広くなりすぎてしまう
-#ADDRESS_PATTERN = "(?P<address>.{2,3}[都道府県]+.*[市区町村].*[0-9０-９]+(?!.*[、。}]))" #手前の「住所：」や郵便番号が入ってしまう
-ADDRESS_PATTERN = "(?P<address>\S{2,3}[都道府県]+.*[市区町村].*[0-9０-９]+(?!.*[、。}]))"
-
+#ADDRESS_PATTERN = "(?P<address>\S{2,3}[都道府県]+.*[市区町村].*[0-9０-９]+(?!.*[、。}]))" #末尾が数字で切れてしまい、「階」、「F」、「館」などの情報が落ちてしまう。
+#ADDRESS_PATTERN = "(?P<address>\S{2,3}[都道府県]+.*[市区町村].*[0-9０-９]+(?!.*[、。}]).*)" #句読点を含むものの除外ができない。
+ADDRESS_PATTERN = "[：]*(?P<address>(?!.*(、|。))\S{2,3}[都道府県]+.*[市区町村].*[0-9０-９]+)" #現状もっとも精度が高いが、市区町村からはじまるケースに対応できない。
 ADDRESS_WORD_CNT_MAX = 40
+TABLE_NAME_PATTERN = ".*名.*"
+PREFIX_NAME_PATTERN = ".*[名]+.*[:：]+(?P<place_name>.*)$"
 
-with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'client_secrets.json'), 'r') as f:
-    secrets = json.load(f)
-    GOOGLE_MAPS_API_KEY = secrets['key']['g_map_api']
 
 class BaseParser(object):
     def make_darts(self):
@@ -34,6 +33,7 @@ class HtmlParser(BaseParser):
     def __init__(self, url, depth=0):
         assert isinstance(depth, int), "depth must be integer"
         self._depth = depth
+        self._src_url = url
         self._urls = [url]
         self._darts = set()
         for search_function in encoding.search_functions():
@@ -69,28 +69,64 @@ class HtmlParser(BaseParser):
 
     def make_darts(self):
         for url in self._urls:
-            addresses_re_matched = self._from_regular_expression(url); print(len(addresses_re_matched)); show_all(addresses_re_matched)
-            #addresses_kwd_matched = self._from_keyword_address(url); print(len(addresses_kwd_matched)); show_all(addresses_kwd_matched)
-            #addresses_separated = self._from_keyword_divisions(url); print(len(addresses_separated)); show_all(addresses_separated)
-        return addresses_re_matched
+            addresses_re_matched = self._from_regular_expression(url); print(len(addresses_re_matched));
+            #addresses_kwd_matched = self._from_keyword_address(url); print(len(addresses_kwd_matched));
+            #addresses_separated = self._from_keyword_divisions(url); print(len(addresses_separated));
+            self._darts.update(addresses_re_matched)
+            #self._darts.add(addresses_kwd_matched)
+            #self._darts.add(addresses_separated)
+        return self._darts
 
     def _from_regular_expression(self, url):
         soup = self._parse_url(url, bsFlag=True)
         elements_contain_address = soup.find_all(string=re.compile(ADDRESS_PATTERN))
-        if elements_contain_address:
-            darts = set([self._remove_extra(element_contain_address.string)
-                            for element_contain_address
-                            in elements_contain_address
-                            if len(self._remove_extra(element_contain_address.string)) < ADDRESS_WORD_CNT_MAX])
-        else:
-            darts = set()
-        return darts
+        if not elements_contain_address:
+            return None
+        result = set()
+        for idx, element_contain_address in enumerate(elements_contain_address):
+            address = self._format_address(element_contain_address.string)
+            place_name = self._get_place_name(element_contain_address)
+            dart = Dart(pk=idx+1, address=address, place_name=place_name, link_url=url, src_url=self._src_url)
+            result.add(dart)
+        return result
+
+    def _format_address(self, address_string):
+        formatted_address = self._remove_extra(address_string)
+        if len(formatted_address) > ADDRESS_WORD_CNT_MAX:
+            return None
+        return formatted_address
 
     def _remove_extra(self, string_inside_element):
         """remove extra words like 'postal code' contained in BeautifulSoup element,
            and then return only string that express address"""
         address_str = re.search(ADDRESS_PATTERN, string_inside_element).group("address")
         return address_str
+
+    def _get_place_name(self, element_contain_address):
+        three_gen_parent = element_contain_address.parent.parent.parent
+
+        #１．<td>等のテーブルのケース(ex)お遍路
+        for td_th_element in three_gen_parent.find_all(['td', 'th']):
+            if re.search(TABLE_NAME_PATTERN, td_th_element.string):
+                element_contain_place_name = td_th_element.find_next(name=td_th_element.name, string=True)
+                place_name = element_contain_place_name.string
+                return place_name
+
+        #２．<li>タグ<p>タグ等の中身で、名称：XXXのようにプリフィクスがついているケース(ex)find travel
+        for string in three_gen_parent.stripped_strings:
+            m = re.search(PREFIX_NAME_PATTERN, string)
+            if m:
+                place_name = m.group('place_name')
+                return place_name
+
+        #３．<p>タグ等のclassやproperty属性などにnameがふくまれているケース(ex)食べログ
+        
+
+        #４．<a>タグの中身が住所となっているケース(ex)東急ハンズ
+        for element in element_contain_address.find_all_previous('a'):
+            if element.string:
+                return element.string
+        return None
 
     def _has_attr_contains(self, kwd):
         """returns function object of attrs_contain_keyword keeping variable 'kwd' inside"""

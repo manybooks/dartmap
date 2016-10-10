@@ -6,6 +6,18 @@ body {
   padding: 0;
 }
 
+#wrap {
+  width: 100%;
+  position: relative;
+  height:auto !important; /*IE6対策*/
+  height: 100%; /*IE6対策*/
+  min-height: 100%;
+}
+
+#content {
+  padding-bottom: 60px;
+}
+
 footer {
   background-color: #444;   /* 背景色(黒) */
 	width:100%;               /* 横の幅を100% */
@@ -22,6 +34,25 @@ footer li {
   height: 20px;
   width: 80px;
   padding: 20px;
+}
+
+.div_center {
+  text-align: center;
+}
+
+#src_url_text {
+  width: 45%;
+  height: 30px;
+  border-radius: 10px;
+}
+
+:placeholder-shown {
+  font-size: 15px;
+  color: green;
+}
+
+input[type="text"]:focus {
+  outline: 0;
 }
 
 #map_canvas {
@@ -41,6 +72,7 @@ footer li {
    float: left;
    width: 40%;
    margin: 20px;
+   margin-left: 40px;
  }
 
  #result_from_url li {

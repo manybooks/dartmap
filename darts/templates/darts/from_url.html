@@ -3,8 +3,9 @@
 {% block content %}
 <div id="result_from_url">
 <ol>
-  {% for address in addresses %}
-    <li>{{ address }}</li>
+  {% for dart in darts %}
+    <li><a href={{ dart.link_url }}>{{ dart.place_name }}</a></li>
+    <p>{{ dart.address }}</p>
   {% endfor %}
 </ol>
 </div>

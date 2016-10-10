@@ -1,5 +1,11 @@
 {% extends "darts/base.html" %}
 
 {% block content %}
-<h1>Welcome to DARTMAP!!!</h1>
+<h1>Welcome to DARTMAP!!!🌏</h1>
+<form action="{% url 'from_url' url='http://temp_url' %}" method="get" id="src_url_form">
+  <div class="div_center">
+    <input type="text" id="src_url_text" placeholder="Paste URL here" name=src_url>
+    <input type="submit" value="throw" id="btn_throw">
+  </div>
+</form>
 {% endblock %}
