@@ -69,9 +69,9 @@ class HtmlParser(BaseParser):
 
     def make_darts(self):
         for url in self._urls:
-            addresses_re_matched = self._from_regular_expression(url); print(len(addresses_re_matched));
-            #addresses_kwd_matched = self._from_keyword_address(url); print(len(addresses_kwd_matched));
-            #addresses_separated = self._from_keyword_divisions(url); print(len(addresses_separated));
+            addresses_re_matched = self._from_regular_expression(url);
+            #addresses_kwd_matched = self._from_keyword_address(url);
+            #addresses_separated = self._from_keyword_divisions(url);
             self._darts.update(addresses_re_matched)
             #self._darts.add(addresses_kwd_matched)
             #self._darts.add(addresses_separated)
@@ -120,7 +120,7 @@ class HtmlParser(BaseParser):
                 return place_name
 
         #３．<p>タグ等のclassやproperty属性などにnameがふくまれているケース(ex)食べログ
-        
+
 
         #４．<a>タグの中身が住所となっているケース(ex)東急ハンズ
         for element in element_contain_address.find_all_previous('a'):
