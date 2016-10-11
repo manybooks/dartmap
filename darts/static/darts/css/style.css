@@ -6,6 +6,12 @@ body {
   padding: 0;
 }
 
+div[role=bg-img] {
+  height: 100%;
+  background-image: url("/static/darts/images/main_img.jpeg");
+  background-size: cover;
+}
+
 #wrap {
   width: 100%;
   position: relative;
@@ -18,22 +24,25 @@ body {
   padding-bottom: 60px;
 }
 
-footer {
+header {
   background-color: #444;   /* 背景色(黒) */
 	width:100%;               /* 横の幅を100% */
-	height: 60px;             /* 縦の幅を60px */
-	bottom: 0;              /* 絶対位置指定(左0px,下0px) */
+	height: 50px;             /* 縦の幅を60px */
   color: white;
   clear: both;
 }
 
-footer li {
+header li {
   display: inline-block;
   list-style-type: none;
   text-align: center;
   height: 20px;
-  width: 80px;
-  padding: 20px;
+  width: 200px;
+}
+
+header li img {
+  height: 30px;
+  width: 30px;
 }
 
 .div_center {

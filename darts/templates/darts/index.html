@@ -1,11 +1,24 @@
-{% extends "darts/base.html" %}
-
-{% block content %}
-<h1>Welcome to DARTMAP!!!🌏</h1>
-<form action="{% url 'from_url' url='http://temp_url' %}" method="get" id="src_url_form">
-  <div class="div_center">
-    <input type="text" id="src_url_text" placeholder="Paste URL here" name=src_url>
-    <input type="submit" value="throw" id="btn_throw">
-  </div>
-</form>
-{% endblock %}
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+  <head>
+    <title>DartsMap</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'darts/css/style.css' %}" />
+    <link rel="shortcut icon" href="{% static 'darts/images/favicon.ico' %}"
+  </head>
+  <body>
+    <header>
+      <li><a href="{% url 'index' %}"><img src="{% static 'darts/images/favicon.ico' %}"></a></li>
+      <li>About</li>
+      <li>Contact</li>
+    </header>
+    <div role="bg-img">
+      <form action="{% url 'from_url' url='http://temp_url' %}" method="get" id="src_url_form">
+        <div class="div_center">
+          <input type="text" id="src_url_text" placeholder="Paste URL here" name=src_url>
+          <input type="submit" value="throw" id="btn_throw">
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

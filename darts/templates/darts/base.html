@@ -3,17 +3,20 @@
 
 <html>
   <head>
+    <title>{% block title %}DartsMap{% endblock %}</title>
     <link rel="stylesheet" type="text/css" href="{% static 'darts/css/style.css' %}" />
-    <title>{% block title %}DartMap{% endblock %}</title>
+    <link rel="shortcut icon" href="{% static 'darts/images/favicon.ico' %}"
   </head>
   <body>
     <div id=wrap>
-      <div id="header">{% block header %}{% endblock %}</div>
+      <header>
+        <li><a href="{% url 'index' %}"><img src="{% static 'darts/images/favicon.ico' %}"></a></li>
+        <li>About</li>
+        <li>Contact</li>
+      </header>
       <div id="content">{% block content %}{% endblock %}</div>
       <footer>
         {% block footer %}
-          <li>About</li>
-          <li>Contact</li>
         {% endblock %}
       </footer>
       <script type="text/javascript" src="{% static 'darts/js/init_map.js' %}"></script>
