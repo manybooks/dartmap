@@ -4,8 +4,10 @@
 <div id="result_from_url">
 <ol>
   {% for dart in darts %}
-    <li><a href={{ dart.link_url }}>{{ dart.place_name }}</a></li>
-    <p>{{ dart.address }}</p>
+    <li>
+      <a id="place_name-{{ forloop.counter }}" href={{ dart.link_url }}>{{ dart.place_name }}</a>
+    </li>
+    <p id="address-{{ forloop.counter }}">{{ dart.address }}</p>
   {% endfor %}
 </ol>
 </div>
