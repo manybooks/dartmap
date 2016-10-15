@@ -85,7 +85,7 @@ class HtmlParser(BaseParser):
         result = set()
         for idx, element_contain_address in enumerate(elements_contain_address):
             address = self._format_address(element_contain_address.string)
-            place_name = self._get_place_name(element_contain_address)
+            place_name = self._get_place_name(element_contain_address).strip()
             dart = Dart(pk=idx+1, address=address, place_name=place_name, link_url=url, src_url=self._src_url)
             result.add(dart)
         return result
@@ -120,7 +120,10 @@ class HtmlParser(BaseParser):
                 return place_name
 
         #３．<p>タグ等のclassやproperty属性などにnameがふくまれているケース(ex)食べログ
-
+        for element in element_contain_address.find_all_previous():
+            for attribute_value in element.attrs.values():
+                if _contain_keyword(attribute_value, "name"):
+                    return element.string
 
         #４．<a>タグの中身が住所となっているケース(ex)東急ハンズ
         for element in element_contain_address.find_all_previous('a'):
@@ -130,20 +133,9 @@ class HtmlParser(BaseParser):
 
     def _has_attr_contains(self, kwd):
         """returns function object of attrs_contain_keyword keeping variable 'kwd' inside"""
-        def contain_keyword(iterable, keyword):
-            """returns True if iterable contains keyword, otherwise returns False"""
-            result = False
-            if isinstance(iterable, str):
-                return keyword in iterable.lower()
-            for elem in iterable:
-                result = contain_keyword(elem, keyword)
-                if result:
-                    break
-            return result
-
         def attrs_contain_keyword(*args):
             for attr in args[0].attrs.values():
-                return contain_keyword(attr, kwd)
+                return _contain_keyword(attr, kwd)
         return attrs_contain_keyword
 
     def _from_keyword_address(self, url):
@@ -197,6 +189,18 @@ class Organizer(object):
 
     def _get_contents_from_tag_trio(self, tag_trio):
         return "".join([tag.get_text() for tag in tag_trio])
+
+#util method below
+def _contain_keyword(iterable, keyword):
+    """bs4 tag.attrs.values() returns two‐dimensional list. This is why using recursive call in this function"""
+    result = False
+    if isinstance(iterable, str):
+        return keyword in iterable.lower()
+    for elem in iterable:
+        result = _contain_keyword(elem, keyword)
+        if result:
+            break
+    return result
 
 def show_all(iterable):
     """print method for debug"""
