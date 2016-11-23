@@ -8,14 +8,14 @@
   </head>
   <body>
     <header>
-      <li><a href="{% url 'index' %}"><img src="{% static 'darts/images/favicon.ico' %}"></a></li>
+      <li><a href="{% url 'darts:index' %}"><img src="{% static 'darts/images/favicon.ico' %}"></a></li>
       <li>About</li>
       <li>Contact</li>
     </header>
     <div role="bg-img">
-      <form action="{% url 'from_url' url='http://temp_url' %}" method="get" id="src_url_form">
+      <form action="{% url 'darts:from_url' %}" method="GET" id="src_url_form">
         <div class="div_center">
-          <input type="text" id="src_url_text" placeholder="Paste URL here" name=src_url>
+          {{ form }}
           <input type="submit" value="throw" id="btn_throw">
         </div>
       </form>

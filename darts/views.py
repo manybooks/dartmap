@@ -1,8 +1,10 @@
 import json
 import os
-from django.http import HttpResponse
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from urllib.parse import urlencode
+from .forms import SourceUrlForm
 from .parser import HtmlParser, TextParser
 
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'client_secrets.json'), 'r') as f:
@@ -14,26 +16,24 @@ CALLBACK_FUNCTION = 'initMap'
 MAP_SRC = GOOGLE_MAPS_URL_BASE + urlencode({'key': GOOGLE_MAPS_API_KEY, 'callback': CALLBACK_FUNCTION, 'signed_in': 'true'})
 
 def index(request):
-    context = { 'map_src': MAP_SRC, }
+    form = SourceUrlForm()
+    context = {
+        'map_src': MAP_SRC,
+        'form': form,
+    }
     return render(request, 'darts/index.html', context)
 
-def from_url(request, url):
-    src_url_from_top_page = request.GET.get("src_url", False)
-    if src_url_from_top_page:
-        url = src_url_from_top_page
+def from_url(request):
+    form = SourceUrlForm(request.GET)
+    url = ""
+    if form.is_valid():
+        url = form.cleaned_data['url']
     else:
-        url += _get_query_in_src_url(request)
+        return HttpResponseRedirect(reverse('darts:index', args=(request)))
     parser = HtmlParser(url=url)
     darts = parser.make_darts()
-    context = { 'map_src': MAP_SRC,
-                'darts': darts}
+    context = {
+        'map_src': MAP_SRC,
+        'darts': darts,
+    }
     return render(request, 'darts/from_url.html', context)
-
-def _get_query_in_src_url(request):
-    """if source url contains query, WSGI recognize that as 'QUERY_STRING' of META information and
-    remove from 'url' keyword argument of from_url function. So this function salvage and return
-    the query part of source url."""
-    query = request.META["QUERY_STRING"]
-    if query:
-        return "?" + query
-    return ""
