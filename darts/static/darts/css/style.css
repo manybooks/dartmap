@@ -6,22 +6,12 @@ body {
   padding: 0;
 }
 
+/* ----------------------------------for index.html---------------------------------- */
+
 div[role=bg-img] {
   height: 100%;
   background-image: url("/static/darts/images/main_img.jpeg");
   background-size: cover;
-}
-
-#wrap {
-  width: 100%;
-  position: relative;
-  height:auto !important; /*IE6対策*/
-  height: 100%; /*IE6対策*/
-  min-height: 100%;
-}
-
-#content {
-  padding-bottom: 60px;
 }
 
 header {
@@ -49,6 +39,10 @@ header li img {
   text-align: center;
 }
 
+#src_url_form {
+  padding-top: 20px;
+}
+
 #id_url {
   width: 45%;
   height: 30px;
@@ -62,6 +56,27 @@ header li img {
 
 input[type="url"]:focus {
   outline: 0;
+}
+
+/* make bullet point invisible */
+.error {
+  list-style-type: none;
+  background-image:none;
+  padding-left:0;
+  color: red;
+}
+/* ---------------------------------------------------------------------------------- */
+
+#wrap {
+  width: 100%;
+  position: relative;
+  height:auto !important; /*IE6対策*/
+  height: 100%; /*IE6対策*/
+  min-height: 100%;
+}
+
+#content {
+  padding-bottom: 60px;
 }
 
 #map_canvas {

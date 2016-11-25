@@ -1,8 +1,9 @@
 import json
 import os
+from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from urllib.parse import urlencode
 from .forms import SourceUrlForm
 from .parser import HtmlParser, TextParser
@@ -15,7 +16,7 @@ GOOGLE_MAPS_URL_BASE = 'https://maps.googleapis.com/maps/api/js?'
 CALLBACK_FUNCTION = 'initMap'
 MAP_SRC = GOOGLE_MAPS_URL_BASE + urlencode({'key': GOOGLE_MAPS_API_KEY, 'callback': CALLBACK_FUNCTION, 'signed_in': 'true'})
 
-def index(request):
+def index(request, messages=None):
     form = SourceUrlForm()
     context = {
         'map_src': MAP_SRC,
@@ -29,9 +30,12 @@ def from_url(request):
     if form.is_valid():
         url = form.cleaned_data['url']
     else:
-        return HttpResponseRedirect(reverse('darts:index', args=(request)))
+        return redirect('darts:index')
     parser = HtmlParser(url=url)
     darts = parser.make_darts()
+    if not darts:
+        messages.add_message(request, messages.ERROR, '指定されたページに住所が見つかりませんでした。')
+        return redirect('darts:index')
     context = {
         'map_src': MAP_SRC,
         'darts': darts,
