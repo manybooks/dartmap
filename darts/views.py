@@ -26,12 +26,12 @@ def index(request, messages=None):
 
 def from_url(request):
     form = SourceUrlForm(request.GET)
-    url = ""
     if form.is_valid():
         url = form.cleaned_data['url']
+        depth = 1 if form.cleaned_data['recursion'] else 0
     else:
         return redirect('darts:index')
-    parser = HtmlParser(url=url)
+    parser = HtmlParser(url=url, depth=depth)
     darts = parser.make_darts()
     if not darts:
         messages.add_message(request, messages.ERROR, '指定されたページに住所が見つかりませんでした。')
