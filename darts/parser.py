@@ -10,6 +10,7 @@ import requests
 import os
 import sys
 import re
+import threading
 
 KEYWORDS = {"address": "address",
             "region": "region",
@@ -79,12 +80,15 @@ class HtmlParser(BaseParser):
         return url.startswith(base_url)
 
     def make_darts(self):
+        threads = []
         for url in self._urls:
-            addresses_re_matched = self._from_regular_expression(url);
+            thread = threading.Thread(target=self._from_regular_expression, args=(url, ))
+            thread.start()
+            threads.append(thread)
+        for thread in threads:
+            thread.join()
             #addresses_kwd_matched = self._from_keyword_address(url);
             #addresses_separated = self._from_keyword_divisions(url);
-            if addresses_re_matched:
-                self._darts.update(addresses_re_matched)
             #self._darts.add(addresses_kwd_matched)
             #self._darts.add(addresses_separated)
         return self._darts
@@ -94,15 +98,17 @@ class HtmlParser(BaseParser):
         elements_contain_address = soup.find_all(string=re.compile(ADDRESS_PATTERN))
         if not elements_contain_address:
             return None
-        result = set()
+        results = set()
         for element_contain_address in elements_contain_address:
             address = self._format_address(element_contain_address.string)
             if self._is_invalid_address(address):
                 continue
             place_name = self._get_place_name(element_contain_address)
             dart = Dart(pk=self._index(), address=address, place_name=place_name, link_url=url, src_url=self._src_url)
-            result.add(dart)
-        return result
+            results.add(dart)
+        for result in results:
+            self._darts.add(result)
+        return
 
     def _format_address(self, address_string):
         formatted_address = self._remove_extra(address_string)
