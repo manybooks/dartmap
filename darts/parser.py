@@ -1,7 +1,7 @@
 #coding:utf-8
 from bs4 import BeautifulSoup
 from collections import OrderedDict, namedtuple
-from urllib.parse import urlsplit
+from urllib.parse import urljoin, urlsplit
 from . import encoding
 from .models import Dart
 import codecs
@@ -39,6 +39,7 @@ class HtmlParser(BaseParser):
         self._index = _counter(index)
         self._depth = depth
         self._src_url = url
+        self._base_url = "{0.scheme}://{0.netloc}/".format(urlsplit(url))
         self._urls = self._get_internal_links(url)
         self._darts = set()
         for search_function in encoding.search_functions():
@@ -72,12 +73,19 @@ class HtmlParser(BaseParser):
         links = re.findall(pattern, text)
         if not links:
             return []
-        inside_links = [link for link in links if self._is_internal_link(link)]
+        inside_links = []
+        for link in links:
+            if self._is_absolute_path(link):
+                inside_links.append(link)
+            elif self._is_relative_path(link):
+                inside_links.append(urljoin(self._base_url, link))
         return inside_links
 
-    def _is_internal_link(self, url):
-        base_url = "{0.scheme}://{0.netloc}/".format(urlsplit(self._src_url))
-        return url.startswith(base_url)
+    def _is_absolute_path(self, url):
+        return url.startswith(self._base_url)
+
+    def _is_relative_path(self, url):
+        return url.startswith("/")
 
     def make_darts(self):
         threads = []
