@@ -274,3 +274,12 @@ def show_matched_only(iterable):
     for elem in iterable:
         if re.search(ADDRESS_PATTERN, elem):
             print (elem)
+
+#function to collect learning data
+def output_darts(p):
+    base = os.path.dirname(os.path.abspath(__file__))
+    output_path = os.path.join(base, '../output_darts.txt')
+    output_string = [dart.address + "\t" + p._src_url for dart in p._darts]
+    with open(output_path, "a") as f:
+        f.write("\n".join(output_string))
+    return
