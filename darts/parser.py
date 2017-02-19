@@ -24,6 +24,11 @@ ADDRESS_PATTERN = "[:：【】]*(?P<address>(?!.*(、|。))\S{2,3}[都道府県]
 ADDRESS_WORD_CNT_MAX = 40
 TABLE_NAME_PATTERN = ".*名.*"
 PREFIX_NAME_PATTERN = ".*[名]+.*[:：]+(?P<place_name>.*)$"
+IGNORE_FILE_TYPE = (
+    ".css",
+    ".js",
+    ".img"
+)
 
 
 class BaseParser(object):
@@ -61,6 +66,8 @@ class HtmlParser(BaseParser):
             added_urls = set()
             for url in urls:
                 if not url in visited:
+                    if url.endswith(IGNORE_FILE_TYPE):
+                        continue
                     visited.append(url)
                     added_urls.update(self._get_links_inside_page(url))
             urls.update(added_urls)
