@@ -4,7 +4,7 @@ from collections import OrderedDict, namedtuple
 from urllib.parse import urljoin, urlsplit
 from . import encoding
 from .models import Dart
-from classifier import classifier
+from classifier.classifier import ClfAddress
 import codecs
 import logging
 import requests
@@ -49,7 +49,7 @@ class HtmlParser(BaseParser):
         self._base_url = "{0.scheme}://{0.netloc}/".format(urlsplit(url))
         self._urls = self._get_internal_links(url)
         self._darts = set()
-        self._clf_address = classifier.ClfAddress()
+        self._clf_address = ClfAddress()
         for search_function in encoding.search_functions():
             codecs.register(search_function)
 
