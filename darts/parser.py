@@ -4,6 +4,7 @@ from collections import OrderedDict, namedtuple
 from urllib.parse import urljoin, urlsplit
 from . import encoding
 from .models import Dart
+from classifier import classifier
 import codecs
 import logging
 import requests
@@ -20,7 +21,7 @@ KEYWORDS = {"address": "address",
 #ADDRESS_PATTERN = "(?P<address>(.+[都道府県])?.*[市区町村].*[0-9０-９]+(?!.*[、。}]))" #都道府県を含まなくてもヒットするが、許容範囲が広くなりすぎてしまう
 #ADDRESS_PATTERN = "(?P<address>\S{2,3}[都道府県]+.*[市区町村].*[0-9０-９]+(?!.*[、。}]))" #末尾が数字で切れてしまい、「階」、「F」、「館」などの情報が落ちてしまう。
 #ADDRESS_PATTERN = "(?P<address>\S{2,3}[都道府県]+.*[市区町村].*[0-9０-９]+(?!.*[、。}]).*)" #句読点を含むものの除外ができない。
-#ADDRESS_PATTERN = "[:：【】]*(?P<address>(?!.*(、|。))\S{2,3}[都道府県]+.+[市区町村].*[0-9０-９]+.*)" #現状もっとも精度が高いが、市区町村からはじまるケースに対応できない。
+#ADDRESS_PATTERN = "[:：【】]*(?P<address>(?!.*(、|。))\S{2,3}[都道府県]+.+[市区町村].*[0-9０-９]+.*)" #現状もっとも精度が高いが、pd市区町村からはじまるケースに対応できない。
 ADDRESS_PATTERN = "[:：【】住所]*(?P<address>(?!.*(、|。))\S{1,15}[市区町村].*[0-9０-９]+.*)" #市区町村からはじまるケースに対応可能だが、拾いすぎる。ADDRESS_WORD_CNT_MAX = 40
 TABLE_NAME_PATTERN = ".*名.*"
 PREFIX_NAME_PATTERN = ".*[名]+.*[:：]+(?P<place_name>.*)$"
@@ -47,6 +48,7 @@ class HtmlParser(BaseParser):
         self._base_url = "{0.scheme}://{0.netloc}/".format(urlsplit(url))
         self._urls = self._get_internal_links(url)
         self._darts = set()
+        self._clf_address = classifier.ClfAddress()
         for search_function in encoding.search_functions():
             codecs.register(search_function)
 
@@ -116,7 +118,9 @@ class HtmlParser(BaseParser):
         results = set()
         for element_contain_address in elements_contain_address:
             address = self._format_address(element_contain_address.string)
-            if self._is_invalid_address(address):
+            if self._is_already_sotred(address):
+                continue
+            if not self._clf_address.is_address(address):
                 continue
             place_name = self._get_place_name(element_contain_address)
             dart = Dart(pk=self._index(), address=address, place_name=place_name, link_url=url, src_url=self._src_url)
@@ -137,10 +141,7 @@ class HtmlParser(BaseParser):
         address_str = re.search(ADDRESS_PATTERN, string_inside_element).group("address")
         return address_str
 
-    def _is_invalid_address(self, address):
-        #address expression in the tag so can't get address by 'element_contain_address.string'
-        if address == None:
-            return True
+    def _is_already_sotred(self, address):
         addresses_already_stored = [dart.address for dart in self._darts]
         if address in addresses_already_stored:
             return True
